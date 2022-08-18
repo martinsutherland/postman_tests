@@ -1,0 +1,287 @@
+{
+	"info": {
+		"_postman_id": "e55ab334-3a9a-4474-8b62-8934ada7d876",
+		"name": "API testing server on a Raspberry Pi",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "17443618"
+	},
+	"item": [
+		{
+			"name": "New Request",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.environment.set('firstName', 'Donatello')\r",
+							"pm.environment.set('lastName', 'Turtle')\r",
+							"pm.environment.set('age', 5)\r",
+							"pm.environment.set('dateOfBirth', '09/09/2016')\r",
+							"pm.environment.set('likesCats', true)\r",
+							"pm.environment.set('favouriteColour1', 'Purple')\r",
+							"pm.environment.set('favouriteColour2', 'Green')"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"New record created: status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"    const response = pm.response.json()\r",
+							"    pm.environment.set(\"id\", response.id)\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"firstName\": \"{{firstName}}\",\r\n    \"lastName\": \"{{lastName}}\",\r\n    \"age\": {{age}},\r\n    \"dateOfBirth\": \"{{dateOfBirth}}\",\r\n    \"likesCats\": {{likesCats}},\r\n    \"favouriteColours\": \r\n        [\"{{favouriteColour1}}\", \"{{favouriteColour2}}\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://192.168.0.46:3000/people",
+					"protocol": "http",
+					"host": [
+						"192",
+						"168",
+						"0",
+						"46"
+					],
+					"port": "3000",
+					"path": [
+						"people"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get submitted person",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();\r",
+							"console.log(jsonData)\r",
+							"\r",
+							"const id = jsonData.id\r",
+							"const firstName = jsonData.firstName\r",
+							"const lastName = jsonData.lastName\r",
+							"const age = jsonData.age\r",
+							"const dateOfBirth = jsonData.dateOfBirth\r",
+							"const likesCats = jsonData.likesCats\r",
+							"const favouriteColours = jsonData.favouriteColours\r",
+							"\r",
+							"const submittedFirstName = pm.environment.get('firstName')\r",
+							"const submittedLastName = pm.environment.get('lastName')\r",
+							"const submittedAge = pm.environment.get('age')\r",
+							"const submittedDOB = pm.environment.get('dateOfBirth')\r",
+							"const submittedLikesCats = pm.environment.get('likesCats')\r",
+							"const submittedFavouriteColours = [pm.environment.get('favouriteColour1'), pm.environment.get('favouriteColour2')]\r",
+							"\r",
+							"pm.test(\"Expected first name returned from server\", function () {\r",
+							"    pm.expect(firstName).to.eql(submittedFirstName);    \r",
+							"});\r",
+							"pm.test(\"Expected last name returned from server\", function () {\r",
+							" pm.expect(lastName).to.eql(submittedLastName);\r",
+							"});\r",
+							"pm.test(\"Expected age returned from server\", function () {\r",
+							"    pm.expect(age).to.eql(submittedAge)\r",
+							"});\r",
+							"pm.test(\"Expected date of birth returned from server\", function () {\r",
+							"    pm.expect(dateOfBirth).to.eql(submittedDOB)\r",
+							"});\r",
+							"pm.test(\"Expected likeCats response returned from server\", function () {\r",
+							"    pm.expect(likesCats).to.eql(submittedLikesCats)\r",
+							"});\r",
+							"pm.test(\"Expected favourite colours returned from server\", function () {\r",
+							"    pm.expect(favouriteColours).to.eql(submittedFavouriteColours)\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://192.168.0.46:3000/people/:id",
+					"protocol": "http",
+					"host": [
+						"192",
+						"168",
+						"0",
+						"46"
+					],
+					"port": "3000",
+					"path": [
+						"people",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "{{id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Edit submitted person",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"pm.test(\"Expected edited favourite colours returned from server\", function () {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    const colours = jsonData.favouriteColours\r",
+							"    pm.expect(colours).to.eql([\"Pink\", \"Black\"])\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"favouriteColours\": \r\n        [\"Pink\", \"Black\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://192.168.0.46:3000/people/:id",
+					"protocol": "http",
+					"host": [
+						"192",
+						"168",
+						"0",
+						"46"
+					],
+					"port": "3000",
+					"path": [
+						"people",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "{{id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete record",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://192.168.0.46:3000/people/:id",
+					"protocol": "http",
+					"host": [
+						"192",
+						"168",
+						"0",
+						"46"
+					],
+					"port": "3000",
+					"path": [
+						"people",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "{{id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get submitted person Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Record has been deleted, no response data retrieved', () => {\r",
+							"    const response = pm.response.json()\r",
+							"    pm.expect(response).to.eql({});\r",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://192.168.0.46:3000/people/:id",
+					"protocol": "http",
+					"host": [
+						"192",
+						"168",
+						"0",
+						"46"
+					],
+					"port": "3000",
+					"path": [
+						"people",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "{{id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
